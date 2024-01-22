@@ -1,0 +1,11 @@
+main: dev.portero.NeonPlugin
+name: Neon
+version: ${project.version}
+author: Portero
+api-version: 1.13
+description: A simple tool to make your development cycle easier.
+commands:
+  neon:
+    description: Main command for Neon. Settings, etc.
+  test:
+    description: Test command for Neon.
