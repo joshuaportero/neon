@@ -66,11 +66,18 @@ public class CommandHandler {
     private boolean execute(Class<?> commandClass, CommandSender sender, String[] args) throws InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
         Command command = commandClass.getAnnotation(Command.class);
         if (!command.permission().isEmpty() && !sender.hasPermission(command.permission())) {
+//            Message.COMMANDS_NO_PERMISSION.send(sender);
             sender.sendMessage("§cYou don't have permission to execute this command!");
             return false;
         }
         if (command.executorType() == ExecutorType.PLAYER && !(sender instanceof Player)) {
+//            Message.COMMANDS_ONLY_PLAYERS.send(sender);
             sender.sendMessage("§cOnly players can execute this command!");
+            return false;
+        }
+
+        if(command.executorType() == ExecutorType.CONSOLE && sender instanceof Player) {
+            sender.sendMessage("§cOnly console can execute this command!");
             return false;
         }
 
@@ -84,13 +91,39 @@ public class CommandHandler {
         if (args.length == 0) {
             Method method = methods.stream().filter(m -> m.getAnnotation(SubCommand.class).name().isEmpty()).findFirst().orElse(null);
             if (method == null) {
-                sender.sendMessage("§cInvalid usage! Try: /" + command.name() + " help");
+                sender.sendMessage("§c§l" + command.name().toUpperCase() + " §7- §f(" + command.permission() + ")");
+                methods.forEach(m -> {
+                    SubCommand subCommand = m.getAnnotation(SubCommand.class);
+                    sender.sendMessage("§c/" + command.name() + " " + subCommand.name() + " §7- §f" + subCommand.description());
+                });
                 return false;
             }
             method.invoke(commandClass.getDeclaredConstructor().newInstance(), new CommandContext(sender, args));
             return true;
         }
 
-        return false;
+        Method method = methods.stream().filter(m -> m.getAnnotation(SubCommand.class).name().equalsIgnoreCase(args[0])).findFirst().orElse(null);
+        if (method == null) {
+            sender.sendMessage("§cThis command is being developed!");
+            return false;
+        }
+        SubCommand subCommand = method.getAnnotation(SubCommand.class);
+        if (!subCommand.permission().isEmpty() && !sender.hasPermission(subCommand.permission())) {
+//                Message.COMMANDS_NO_PERMISSION.send(sender);
+            sender.sendMessage("§cYou don't have permission to execute this command!");
+            return false;
+        }
+        if (subCommand.executorType() == ExecutorType.PLAYER && !(sender instanceof Player)) {
+//                Message.COMMANDS_ONLY_PLAYERS.send(sender);
+            sender.sendMessage("§cOnly players can execute this command!");
+            return false;
+        }
+        if(subCommand.executorType() == ExecutorType.CONSOLE && sender instanceof Player) {
+            sender.sendMessage("§cOnly console can execute this command!");
+            return false;
+        }
+        method.invoke(commandClass.getDeclaredConstructor().newInstance(), new CommandContext(sender, args));
+        return true;
+
     }
 }

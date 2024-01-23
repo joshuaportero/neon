@@ -19,6 +19,7 @@ tasks.withType<JavaCompile> {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven {
         name = "PaperMC"
         url = uri("https://repo.papermc.io/repository/maven-public/")
@@ -27,6 +28,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot:1.20.4-R0.1-SNAPSHOT")
 
     implementation("org.reflections:reflections:0.10.2")
 }
