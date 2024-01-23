@@ -4,28 +4,20 @@ import dev.portero.command.CommandContext;
 import dev.portero.command.ExecutorType;
 import dev.portero.command.annotation.Command;
 import dev.portero.command.annotation.SubCommand;
+import org.bukkit.entity.Player;
 
 @Command(name = "neon", permission = "neon.cmd")
 public class NeonCMD {
 
-    @SubCommand(name = "test", permission = "neon.cmd.test", description = "Test the NeonCMD class")
+    @SubCommand(name = "test", permission = "neon.cmd.test", description = "Test the NeonCMD class", executorType = ExecutorType.PLAYER)
     public void testCommand(CommandContext ctx) {
-        ctx.sender().sendMessage("Test command executed!");
-    }
-
-    @SubCommand(name = "help", permission = "neon.cmd.help", description = "Display the help menu")
-    public void helpCommand(CommandContext ctx) {
-        ctx.sender().sendMessage("Help command executed!");
-    }
-
-    @SubCommand(name = "reload", permission = "neon.cmd.reload", description = "Reload all the config files")
-    public void reloadCommand(CommandContext ctx) {
-        ctx.sender().sendMessage("Reload command executed!");
-    }
-
-    @SubCommand(name = "info", permission = "neon.cmd.info", description = "Get info about the plugin")
-    public void infoCommand(CommandContext ctx) {
-        ctx.sender().sendMessage("Info command executed!");
+        if (ctx.args().length == 1) {
+            ctx.sender().sendMessage("Test command executed!");
+        } else {
+            Player player = ctx.getPlayer();
+            player.teleport(player.getWorld().getSpawnLocation());
+            ctx.sender().sendMessage("Teleported to spawn!");
+        }
     }
 
     @SubCommand(name = "version", permission = "neon.cmd.version", description = "Get the version of the plugin", executorType = ExecutorType.PLAYER)

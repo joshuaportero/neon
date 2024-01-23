@@ -28,7 +28,6 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
-    compileOnly("org.spigotmc:spigot:1.20.4-R0.1-SNAPSHOT")
 
     implementation("org.reflections:reflections:0.10.2")
 }
