@@ -26,6 +26,7 @@ public class CommandExecutor {
         this.args = args;
     }
 
+    // FIXME: 01/24/2024
     public boolean execute() {
 
         if (checkPermissions(sender, command.permission()) || checkExecutorType(sender, command.executorType()))
@@ -63,6 +64,7 @@ public class CommandExecutor {
         return this.invokeMethod(method, sender, args);
     }
 
+    // FIXME: 01/24/2024
     private boolean invokeMethod(Optional<Method> method, CommandSender sender, String[] args) {
 
         if(method.isEmpty()) return false;

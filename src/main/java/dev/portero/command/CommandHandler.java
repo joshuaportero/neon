@@ -60,6 +60,8 @@ public class CommandHandler {
         }
     }
 
+    // TODO: Add tab completion
+
     private boolean executeCommand(Class<?> commandClass, CommandSender sender, String[] args) {
         Command command = commandClass.getAnnotation(Command.class);
         Set<Method> methods = this.subCommandsMap.get(commandClass.getSimpleName());
