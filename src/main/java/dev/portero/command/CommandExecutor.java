@@ -2,11 +2,14 @@ package dev.portero.command;
 
 import dev.portero.command.annotation.Command;
 import dev.portero.command.annotation.SubCommand;
+import dev.portero.locale.Message;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.Set;
 
 public class CommandExecutor {
@@ -23,14 +26,19 @@ public class CommandExecutor {
         this.args = args;
     }
 
-    public boolean execute() throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    public boolean execute() {
 
-        if (checkPermissions(sender, command.permission())) return false;
-        if (checkExecutorType(sender, command.executorType())) return false;
+        if (checkPermissions(sender, command.permission()) || checkExecutorType(sender, command.executorType()))
+            return false;
+
+        if (methods.size() == 1 && methods.stream().findFirst().get().getAnnotation(SubCommand.class).name().isEmpty()) {
+            Optional<Method> method = methods.stream().findFirst();
+            return this.invokeMethod(method, sender, args);
+        }
 
         if (args.length == 0) {
-            Method method = methods.stream().filter(m -> m.getAnnotation(SubCommand.class).name().isEmpty()).findFirst().orElse(null);
-            if (method == null) {
+            Optional<Method> method = methods.stream().filter(m -> m.getAnnotation(SubCommand.class).name().isEmpty()).findFirst();
+            if (method.isEmpty()) {
                 sender.sendMessage("§c§l" + command.name().toUpperCase() + " §7- §f(" + command.permission() + ")");
                 methods.forEach(m -> {
                     SubCommand subCommand = m.getAnnotation(SubCommand.class);
@@ -38,27 +46,42 @@ public class CommandExecutor {
                 });
                 return false;
             }
-            method.invoke(method.getDeclaringClass().getDeclaredConstructor().newInstance(), new CommandContext(sender, args));
-            return true;
+
+            return this.invokeMethod(method, sender, args);
         }
 
-        Method method = methods.stream().filter(m -> m.getAnnotation(SubCommand.class).name().equalsIgnoreCase(args[0])).findFirst().orElse(null);
-        if (method == null) {
+        Optional<Method> method = methods.stream().filter(m -> m.getAnnotation(SubCommand.class).name().equalsIgnoreCase(args[0])).findFirst();
+        if (method.isEmpty()) {
             sender.sendMessage("§c/" + command.name() + " §f→ §c" + args[0] + " §7- §fWe couldn't find this subcommand!");
             return false;
         }
-        SubCommand subCommand = method.getAnnotation(SubCommand.class);
+        SubCommand subCommand = method.get().getAnnotation(SubCommand.class);
 
-        if (checkPermissions(sender, subCommand.permission())) return false;
-        if (checkExecutorType(sender, subCommand.executorType())) return false;
+        if (checkPermissions(sender, subCommand.permission()) || checkExecutorType(sender, subCommand.executorType()))
+            return false;
 
-        method.invoke(method.getDeclaringClass().getDeclaredConstructor().newInstance(), new CommandContext(sender, args));
+        return this.invokeMethod(method, sender, args);
+    }
+
+    private boolean invokeMethod(Optional<Method> method, CommandSender sender, String[] args) {
+
+        if(method.isEmpty()) return false;
+
+        try {
+            Constructor<?> constructor = method.get().getDeclaringClass().getDeclaredConstructor();
+            constructor.setAccessible(true);
+            method.get().invoke(constructor.newInstance(), new CommandContext(sender, args));
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException |
+                 NoSuchMethodException e) {
+            sender.sendMessage("§c" + new RuntimeException(e).getMessage());
+            return false;
+        }
         return true;
     }
 
     private boolean checkPermissions(CommandSender sender, String requiredPermission) {
         if (!requiredPermission.isEmpty() && !sender.hasPermission(requiredPermission)) {
-            sender.sendMessage("§cYou don't have permission to execute this command!");
+            Message.COMMANDS_NO_PERMISSION.send(sender);
             return true;
         }
         return false;
@@ -66,11 +89,11 @@ public class CommandExecutor {
 
     private boolean checkExecutorType(CommandSender sender, ExecutorType requiredType) {
         if (requiredType == ExecutorType.PLAYER && !(sender instanceof Player)) {
-            sender.sendMessage("§cOnly players can execute this command!");
+            Message.COMMANDS_ONLY_PLAYER.send(sender);
             return true;
         }
         if (requiredType == ExecutorType.CONSOLE && sender instanceof Player) {
-            sender.sendMessage("§cOnly console can execute this command!");
+            Message.COMMANDS_ONLY_CONSOLE.send(sender);
             return true;
         }
         return false;

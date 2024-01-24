@@ -45,7 +45,7 @@ public class CommandHandler {
             Command command = commandClass.getAnnotation(Command.class);
             PluginCommand pluginCommand = plugin.getCommand(command.name());
             if (pluginCommand == null) {
-                plugin.getLogger().warning("Command " + command.name() + " not found!");
+                plugin.getLogger().warning("The command " + command.name() + " couldn't be registered! Please check your plugin.yml file!");
                 continue;
             }
             pluginCommand.setExecutor((sender, cmd, label, args) -> executeCommand(commandClass, sender, args));

@@ -9,3 +9,16 @@ commands:
     description: Main command for Neon. Settings, etc.
   test:
     description: Test command for Neon.
+  gamemode:
+    description: Gamemode command for Neon.
+    aliases: [ gm ]
+  gmc:
+    description: Change gamemode to creative.
+  gms:
+    description: Change gamemode to survival.
+  gmsp:
+    description: Change gamemode to spectator.
+  gma:
+    description: Change gamemode to adventure.
+  fly:
+    description: Fly command for Neon.

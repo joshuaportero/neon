@@ -1,5 +1,6 @@
 package dev.portero.command;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -12,4 +13,7 @@ public record CommandContext(CommandSender sender, String[] args) {
         return (Player) sender;
     }
 
+    public Player getPlayer(String arg) {
+        return Bukkit.getPlayer(arg);
+    }
 }
