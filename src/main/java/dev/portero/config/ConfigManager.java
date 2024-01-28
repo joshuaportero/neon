@@ -1,7 +1,6 @@
 package dev.portero.config;
 
 import dev.portero.NeonPlugin;
-import dev.portero.config.ConfigFileNames;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
