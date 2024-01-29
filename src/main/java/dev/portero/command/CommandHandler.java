@@ -13,6 +13,7 @@ import org.reflections.Reflections;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.logging.Level;
 
 import static org.reflections.scanners.Scanners.*;
 
@@ -73,17 +74,15 @@ public class CommandHandler {
         Command command = commandClass.getAnnotation(Command.class);
         Set<Method> subCommandsMethods = this.subCommandsMap.get(commandClass.getSimpleName());
 
-        System.out.println("Tab complete methods: " + tabCompleteMethods.size());
-
-
         if (tabCompleteMethods.isEmpty()) {
             if (args.length == 1) {
                 String[] methods = subCommandsMethods.stream().map(method -> method.getAnnotation(SubCommand.class).name()).toArray(String[]::new);
-                return methods.length == 0 ? Collections.emptyList() : List.of(methods);
+                return methods.length == 0 ? Bukkit.getOnlinePlayers().stream().map(Player::getName).toList() : List.of(methods);
             }
             return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
         }
 
+        plugin.getLogger().log(Level.WARNING, "Tab completion methods are deprecated! Please use the TabComplete annotation instead!");
         try {
             CommandCompletions commandCompletions = new CommandCompletions(subCommandsMethods, tabCompleteMethods, args);
             completions = commandCompletions.getCompletions();
